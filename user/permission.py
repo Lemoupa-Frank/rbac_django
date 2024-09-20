@@ -39,8 +39,27 @@ class IsAdminUser(permissions.BasePermission):
         return request.user and has_group_permission
 
 
-class IsAdminOrAnonymousUser(permissions.BasePermission):
-    required_groups = ['admin', 'anonymous']
+class IsAdminOrEmployer(permissions.BasePermission):
+    required_groups = ['admin', 'employer']
+
+    def has_permission(self, request, view):
+        """
+        Allow employers to create only clients, and allow full control for admins.
+        """
+        if request.method == 'POST':
+            # Employers are only allowed to create users with the role 'client'
+            if _is_in_group(request.user, 'employer'):
+                return request.data.get('role') == 'client'
+        # Allow admins full access
+        return _has_group_permission(request.user, self.required_groups)
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Object-level permission to allow admins full control and employers to create only clients.
+        """
+        if request.method == 'POST' and _is_in_group(request.user, 'employer'):
+            return request.data.get('role') == 'client'
+        return _has_group_permission(request.user, self.required_groups)
 
     def has_permission(self, request, view):
         has_group_permission = _has_group_permission(request.user, self.required_groups)
