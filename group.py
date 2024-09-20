@@ -8,7 +8,7 @@ django.setup()
 from django.contrib.auth.models import Group
 
 
-GROUPS = ['admin', 'anonymous']
+GROUPS = ['admin', 'employer', 'client']
 MODELS = ['user']
 
 for group in GROUPS:
