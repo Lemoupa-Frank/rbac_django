@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            position: relative;
+        }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 0;
+            background-color: #ff4b4b;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .logout-button:hover {
+            background-color: #d43f3f;
+        }
+        .dashboard {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            width: 200px;
+        }
+        .card a {
+            display: block;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .card a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Logout button using POST -->
+    <form method="post" action="/logout/">
+        {% csrf_token %}
+        <button class="logout-button" type="submit">Logout</button>
+    </form>
+
+    <h1>Admin Dashboard</h1>
+    <div class="dashboard">
+        <div class="card">
+            <h2>Clients</h2>
+            <a href="/clients">Go to Clients</a>
+        </div>
+        <div class="card">
+            <h2>Employers</h2>
+            <a href="/employers">Go to Employers</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

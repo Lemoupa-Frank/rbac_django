@@ -1,5 +1,6 @@
-
 # Distribution / packaging
+__pycache__/
+*.py[cod]
 .Python
 env/
 venv/
