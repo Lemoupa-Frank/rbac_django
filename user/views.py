@@ -83,7 +83,7 @@ class UserViewSet(ModelViewSet):
             # Employers can only create clients
             role = request.data.get('groups')
             logging.warning(role)
-            if role == 4:
+            if int(role) != 4:
                 return Response({'detail': 'Employers can only create clients.'}, status=status.HTTP_403_FORBIDDEN)
         return super().create(request, *args, **kwargs)
 
