@@ -1,14 +1,13 @@
+import logging
+
 from django.shortcuts import redirect, render
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSet, ModelViewSet
-from rest_framework.authtoken.models import Token
-from user.permission import IsAdminUser, IsLoggedInUserOrAdmin, IsAdminOrAnonymousUser
+from user.permission import IsAdminUser, IsLoggedInUserOrAdmin, IsAdminOrEmployer, _is_in_group
 from user.models import User
 from user.serializer import UserSerializer
 from functools import wraps
@@ -40,12 +39,13 @@ def dashboard(request):
         if self.action == 'create':
             permission_classes = [IsAdminUser]
         elif self.action == 'list':
-            permission_classes = [IsAdminOrAnonymousUser]
+            permission_classes = [IsAdminOrEmployer]
         elif self.action == 'retrieve' or self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsLoggedInUserOrAdmin]
         elif self.action == 'destroy':
             permission_classes = [IsLoggedInUserOrAdmin]
         return [permission() for permission in permission_classes]
+
     return render(request, 'dashboard.html')
 
 
@@ -62,16 +62,30 @@ def employers(request):
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrEmployer]
 
     def get_permissions(self):
         permission_classes = []
         if self.action == 'create':
-            permission_classes = [IsAdminUser]
+            return [IsAdminOrEmployer()]
         elif self.action == 'list':
             permission_classes = [IsAuthenticated]  # Modify as needed
         elif self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        """
+        Override create to ensure employers can only create clients.
+        """
+        # Check if the user is in the employer group
+        if _is_in_group(request.user, 'employer'):
+            # Employers can only create clients
+            role = request.data.get('groups')
+            logging.warning(role)
+            if role == 4:
+                return Response({'detail': 'Employers can only create clients.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
 
     def get_authenticators(self):
         """Override to use token from session if available."""
@@ -88,6 +102,7 @@ class UserViewSet(ModelViewSet):
 
 class LoginView(ViewSet):
     serializer_class = AuthTokenSerializer
+
     def create(self, request):
         # Manually initialize the serializer
         serializer = self.serializer_class(data=request.data)
