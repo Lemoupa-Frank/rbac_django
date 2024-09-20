@@ -32,6 +32,7 @@ python manage.py createsuperuser
 ## Usage
 Only the super can create all types of users other 
 users are employer(which can create client) and client 
+navigate to http://127.0.0.1:8000/users/ to add users
 
 ## Contributing
 
